@@ -5,7 +5,7 @@
       <WashroomTitle v-bind:title="name"></WashroomTitle>
       <WashroomDescription v-bind:description="descriptions[0]"></WashroomDescription>
     </div>
-    <WorldClock v-bind:city="location" v-bind:zone="zone"></WorldClock>
+    <WorldClock v-bind:city="location" v-bind:zone="zone" @update="updateTime"></WorldClock>
   </div>
 </template>
 
@@ -45,7 +45,7 @@ export default {
   },
   created() {
     const vm = this;
-    $.getJSON('http://www.chimana.co/json/map-debug.json', (json) => {
+    $.getJSON('http://www.chimana.co/json/map.json', (json) => {
       vm.json = json.data.length;
       let i;
       for (i = 0; i < json.data.length; i += 1) {
@@ -63,7 +63,7 @@ export default {
       }
 
       this.updateTime();
-      this.timeID = setInterval(this.updateTime, 3000);
+      // this.timeID = setInterval(this.updateTime, 3000);
     });
   },
   methods: {
@@ -82,16 +82,15 @@ export default {
       }
     },
     updateTime() {
-      this.index += 1;
-      if (this.index > 9) {
-        this.index = 0;
-      }
-
-      // this.location = `${this.cities[this.index]}, ${this.countries[this.index]}`;
       this.location = this.locations[this.index];
       this.name = this.names[this.index];
       this.zone = this.zones[this.index];
       this.imgSrc = this.images[this.index];
+
+      this.index += 1;
+      if (this.index > this.cities.length) {
+        this.index = 0;
+      }
     },
   },
 };

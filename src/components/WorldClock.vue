@@ -17,6 +17,8 @@ export default {
   props: ['city', 'zone'],
   data() {
     return {
+      INTERVAL: 5, // seconds for emitting update
+      mySeconds: 0,
       time: '',
       date: '',
       timeID: '',
@@ -44,6 +46,7 @@ export default {
       const hh = `${this.zeroPadding(dt.getUTCHours(), 2)}`;
       const mm = `${this.zeroPadding(dt.getUTCMinutes(), 2)}`;
       const ss = `${this.zeroPadding(dt.getUTCSeconds(), 2)}`;
+      this.mySeconds = dt.getUTCSeconds();
       return `${hh}:${mm}:${ss}`;
     },
     dateToDateString(dt) {
@@ -66,6 +69,14 @@ export default {
       const timeString = this.dateToTimeString(tzTime);
       return timeString;
     },
+    send(value) {
+      if (value % this.INTERVAL === 0) {
+        this.$emit('update');
+      }
+    },
+  },
+  watch: {
+    mySeconds: 'send',
   },
 };
 </script>
