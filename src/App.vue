@@ -63,7 +63,6 @@ export default {
       }
 
       this.updateTime();
-      // this.timeID = setInterval(this.updateTime, 3000);
     });
   },
   methods: {
