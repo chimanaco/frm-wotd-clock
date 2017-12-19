@@ -3,7 +3,7 @@
     <img v-bind:src="imgSrc"></img>
     <div class="text">
       <WashroomTitle v-bind:title="name"></WashroomTitle>
-      <WashroomDescription v-bind:description="descriptions[0]"></WashroomDescription>
+      <WashroomTitle v-bind:title="location"></WashroomTitle>
     </div>
     <WorldClock v-bind:city="location" v-bind:zone="zone" @update="updateTime"></WorldClock>
   </div>
@@ -58,7 +58,7 @@ export default {
 
       let j;
       for (j = 0; j < this.cities.length; j += 1) {
-        this.locations[j] = `${this.cities[j].toUpperCase()}, ${this.countries[j].toUpperCase()}`;
+        this.locations[j] = `${this.cities[j]}, ${this.countries[j]}`;
         const zone = Math.floor(Math.random() * 20) + -10;
         this.zones.push(zone);
       }
@@ -123,7 +123,6 @@ img {
   width: 1080px;
 }
 
-
 p {
   margin: 0;
   padding: 0;
@@ -131,7 +130,21 @@ p {
 }
 
 div.text {
-  height: 685px;
+  height: 480px;
+  padding-top: 40px;
 }
+
+#footer {
+  height: 100px;
+  text-align: center;
+}
+
+#footer p {
+  width: 1020px;
+  margin: 0 auto;
+  font-size: 80px;
+  font-weight: bold;
+}
+
 
 </style>

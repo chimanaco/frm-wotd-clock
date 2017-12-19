@@ -20,9 +20,9 @@ h1 {
   //background: blue;
   width: 1020px;
   margin: 0 auto;
-  padding: 40px 0 20px;
+  padding: 0 0 20px;
   line-height: 1;
-  font-size: 60px;
+  font-size: 80px;
   text-align: left;
 }
 
