@@ -90,7 +90,6 @@ export default {
       this.name = this.names[this.index];
       this.zone = this.zones[this.index];
       this.imgSrc = this.images[this.index];
-
       this.index = Math.floor(Math.random() * this.cities.length);
       // this.index += 1;
       // if (this.index > this.cities.length) {
