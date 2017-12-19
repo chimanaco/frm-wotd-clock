@@ -97,6 +97,8 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
 .clockWrapper {
+  position: absolute;
+  z-index: 20;
   width: 100%;
   height: 180px;
   //background: blue;
