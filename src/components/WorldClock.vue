@@ -17,7 +17,7 @@ export default {
   props: ['city', 'zone'],
   data() {
     return {
-      INTERVAL: 5, // seconds for emitting update
+      INTERVAL: 10, // seconds for emitting update
       mySeconds: 0,
       day: '',
       time: '',
@@ -80,6 +80,9 @@ export default {
       return timeString;
     },
     send(value) {
+      if (value % this.INTERVAL === (this.INTERVAL - 1)) {
+        this.$emit('updatePre');
+      }
       if (value % this.INTERVAL === 0) {
         this.$emit('update');
       }
@@ -94,6 +97,9 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
 .clockWrapper {
+  position: absolute;
+  z-index: 20;
+  width: 100%;
   height: 180px;
   //background: blue;
 }

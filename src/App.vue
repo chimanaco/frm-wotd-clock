@@ -1,11 +1,15 @@
 <template>
   <div id="app">
-    <img v-bind:src="imgSrc"></img>
+    <div id="transitionBox" v-bind:class="{ active: isActive }"></div>
+    <img v-bind:src="imgSrc" id="img1"></img>
     <div class="text">
       <WashroomTitle v-bind:title="name"></WashroomTitle>
       <WashroomTitle v-bind:title="location"></WashroomTitle>
     </div>
-    <WorldClock v-bind:city="location" v-bind:zone="zone" @update="updateTime"></WorldClock>
+    <WorldClock v-bind:city="location" v-bind:zone="zone" @update="updateTime" @updatePre="prepareImage"></WorldClock>
+    <div id="footer">
+      <p>WASHROOM OF THE DAY</p>
+    </div>
   </div>
 </template>
 
@@ -33,12 +37,17 @@ export default {
       name: null,
       zone: 0,
       index: 0,
+      nextLocation: null,
+      nextName: null,
+      nextZone: null,
+      nextImgSrc: null,
       cities: [],
       countries: [],
       locations: [],
       names: [],
       zones: [],
       images: [],
+      isActive: false,
       descriptions: [
         'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
         'TOKYO', 'AMSTERDAM'],
@@ -86,15 +95,23 @@ export default {
       }
     },
     updateTime() {
-      this.location = this.locations[this.index];
-      this.name = this.names[this.index];
-      this.zone = this.zones[this.index];
-      this.imgSrc = this.images[this.index];
-      this.index = Math.floor(Math.random() * this.cities.length);
+      this.location = this.nextLocation;
+      this.name = this.nextName;
+      this.zone = this.nextZone;
+      this.imgSrc = this.nextImgSrc;
+      this.isActive = false;
       // this.index += 1;
       // if (this.index > this.cities.length) {
       //   this.index = 0;
       // }
+    },
+    prepareImage() {
+      this.index = Math.floor(Math.random() * this.cities.length);
+      this.nextLocation = this.locations[this.index];
+      this.nextName = this.names[this.index];
+      this.nextZone = this.zones[this.index];
+      this.nextImgSrc = this.images[this.index];
+      this.isActive = true;
     },
   },
 };
@@ -114,6 +131,7 @@ body {
 }
 
 #app {
+  position: relative;
   width: 100%;
   text-align: center;
 }
@@ -121,6 +139,12 @@ body {
 img {
   height: 1080px;
   width: 1080px;
+}
+
+#img2 {
+  position: absolute;
+  top: 0;
+  left: 540px;
 }
 
 p {
@@ -135,6 +159,10 @@ div.text {
 }
 
 #footer {
+  position: absolute;
+  z-index: 20;
+  top: 1790px;
+  width: 100%;
   height: 100px;
   text-align: center;
 }
@@ -144,6 +172,34 @@ div.text {
   margin: 0 auto;
   font-size: 80px;
   font-weight: bold;
+}
+
+div#transitionBox {
+  position: absolute;
+  z-index: 10;
+  width: 100%;
+  height: 0px;
+  background: #000;
+  animation: fadeOut 0.75s;
+  //opacity: 0;
+}
+
+div#transitionBox.active {
+  height: 1920px;
+  animation: mymove 0.75s;
+  //opacity: 1;
+}
+
+@keyframes fadeOut {
+  //from { opacity: 1.0;}
+  //to { opacity: 0;}
+  from { height: 1920px;}
+  to { height: 0px;}
+}
+
+@keyframes mymove {
+  from { height: 0px;}
+  to { height: 1920px;}
 }
 
 
