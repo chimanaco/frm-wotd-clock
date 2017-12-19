@@ -26,6 +26,7 @@ export default {
   },
   data() {
     return {
+      map: 'http://www.chimana.co/json/map.json',
       json: null,
       imgSrc: null,
       location: null,
@@ -45,7 +46,7 @@ export default {
   },
   created() {
     const vm = this;
-    $.getJSON('http://www.chimana.co/json/map.json', (json) => {
+    $.getJSON(this.map, (json) => {
       vm.json = json.data.length;
       let i;
       for (i = 0; i < json.data.length; i += 1) {
