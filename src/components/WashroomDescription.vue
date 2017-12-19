@@ -23,13 +23,4 @@ p {
   font-size: 40px;
   text-align: left;
 }
-
-p {
-  {/*width: 980px;*/}
-  {/*margin: 0 auto;*/}
-  {/*text-align: left;*/}
-  {/*font-size: 50px;*/}
-}
-
-
 </style>
