@@ -57,7 +57,7 @@ export default {
 
       let j;
       for (j = 0; j < this.cities.length; j += 1) {
-        this.locations[j] = `${this.cities[j]}, ${this.countries[j]}`;
+        this.locations[j] = `${this.cities[j].toUpperCase()}, ${this.countries[j].toUpperCase()}`;
         const zone = Math.floor(Math.random() * 20) + -10;
         this.zones.push(zone);
       }
@@ -75,7 +75,11 @@ export default {
         this.countries.push(value);
       }
       if (key === 'name') {
-        this.names.push(value);
+        if (value === '') {
+          this.names.push('Unknown');
+        } else {
+          this.names.push(value);
+        }
       }
       if (key === 'img') {
         this.images.push(value);
@@ -87,10 +91,11 @@ export default {
       this.zone = this.zones[this.index];
       this.imgSrc = this.images[this.index];
 
-      this.index += 1;
-      if (this.index > this.cities.length) {
-        this.index = 0;
-      }
+      this.index = Math.floor(Math.random() * this.cities.length);
+      // this.index += 1;
+      // if (this.index > this.cities.length) {
+      //   this.index = 0;
+      // }
     },
   },
 };
@@ -103,7 +108,7 @@ body {
   width: 100%;
   height: 100%;
   background: #000;
-  font-family: Arial, sans-serif;
+  font-family: Arial, Meiryo, sans-serif;
   //font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
