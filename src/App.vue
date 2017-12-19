@@ -5,6 +5,7 @@
     <div class="text">
       <WashroomTitle v-bind:title="name"></WashroomTitle>
       <WashroomTitle v-bind:title="location"></WashroomTitle>
+      <WashroomTitle v-bind:title="year"></WashroomTitle>
     </div>
     <WorldClock v-bind:city="location" v-bind:zone="zone" @update="updateTime" @updatePre="prepareImage"></WorldClock>
     <div id="footer">
@@ -37,6 +38,7 @@ export default {
       name: null,
       zone: 0,
       index: 0,
+      year: 2016,
       nextLocation: null,
       nextName: null,
       nextZone: null,
@@ -97,8 +99,9 @@ export default {
     updateTime() {
       this.location = this.nextLocation;
       this.name = this.nextName;
-      this.zone = this.nextZone;
+      // this.zone = this.nextZone;
       this.imgSrc = this.nextImgSrc;
+      this.year = this.nextYear;
       this.isActive = false;
       // this.index += 1;
       // if (this.index > this.cities.length) {
@@ -110,7 +113,9 @@ export default {
       this.nextLocation = this.locations[this.index];
       this.nextName = this.names[this.index];
       this.nextZone = this.zones[this.index];
+      this.zone = this.nextZone;
       this.nextImgSrc = this.images[this.index];
+      this.nextYear = Math.floor(Math.random() * 5) + 2012;
       this.isActive = true;
     },
   },
@@ -154,7 +159,7 @@ p {
 }
 
 div.text {
-  height: 480px;
+  height: 500px;
   padding-top: 40px;
 }
 
