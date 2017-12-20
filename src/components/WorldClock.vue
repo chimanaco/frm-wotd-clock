@@ -2,13 +2,14 @@
   <div class="clockWrapper">
     <div class="clock">
       <p class="time">{{ paddedHour }}{{ time }} </p>
-      <p class="city">{{ day }}<br>{{ date }}</p>
+      <p class="date"><span id="containerDay">{{ day }}</span><br><span id="containerDate">{{ date }}</span></p>
     </div>
   </div>
 </template>
 
 <script>
 import { TimelineMax } from 'gsap';
+import CS from 'character-shuffling';
 
 const week = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const month = ['January', 'February', 'March', 'April', 'May', 'June',
@@ -28,12 +29,18 @@ export default {
       time: '',
       date: '',
       timeID: '',
-      updating: false,
+      preDay: '',
       msg: 'Welcome to Your Vue.js App',
     };
   },
   created() {
     this.timeID = setInterval(this.updateTime, 1000);
+  },
+  mounted() {
+    const elementDay = document.getElementById('containerDay');
+    this.descriptionDay = new CS(elementDay);
+    const elementDate = document.getElementById('containerDate');
+    this.descriptionDate = new CS(elementDate);
   },
   methods: {
     zeroPadding(num, digit) {
@@ -98,8 +105,21 @@ export default {
         this.$emit('updatePre');
       }
       if (value % this.INTERVAL === this.INTERVAL - 1) {
-        this.updating = true;
         this.$emit('update');
+      }
+      if (value % this.INTERVAL === 0) {
+        this.shuffleDescription(this.day, this.date);
+      }
+    },
+    shuffleDescription(day, date) {
+      this.$log.debug('shuffleDescription', this.preDay, day);
+
+      if (this.preDay !== day) {
+        // shuffle to a new string specified by the `text` option
+        this.descriptionDay.shuffle({ text: day, time: 10 });
+        this.descriptionDate.shuffle({ text: date, time: 10 });
+
+        this.preDay = day;
       }
     },
   },
@@ -149,14 +169,8 @@ p.time {
   font-size: 150px;
 }
 
-p.city {
-  font-size: 60px;
-}
-
-
 p.date {
-  font-size: 75px;
-  //color: #CCC;
+  font-size: 58px;
 }
 
 </style>
