@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <div id="transitionBox" v-bind:class="{ active: isActive }"></div>
-    <img v-bind:src="imgSrc" id="img1"></img>
+    <div id="mainImg"></div>
     <div class="text">
       <WashroomTitle v-bind:title="name"></WashroomTitle>
       <WashroomTitle v-bind:title="location"></WashroomTitle>
@@ -49,10 +49,9 @@ export default {
       names: [],
       zones: [],
       images: [],
+      loadedImages: [],
       isActive: false,
-      descriptions: [
-        'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
-        'TOKYO', 'AMSTERDAM'],
+      imgLoadedCounter: 0,
     };
   },
   created() {
@@ -72,12 +71,34 @@ export default {
         this.locations[j] = `${this.cities[j]}, ${this.countries[j]}`;
         const zone = Math.floor(Math.random() * 20) + -10;
         this.zones.push(zone);
-      }
 
-      this.updateTime();
+        // load iamge from Tumblr
+        this.loadImage(j);
+      }
     });
   },
   methods: {
+    loadImage(index) {
+      // correct way:
+      const image = new Image();
+      const count = index;
+      image.onload = () => {
+        this.loadedImages[count] = image;
+        // this.$log.debug('test', count, image);
+        this.loadCompleted();
+      };
+      // handle failure
+      image.onerror = () => {
+      };
+      image.src = this.images[index];
+    },
+    loadCompleted() {
+      this.imgLoadedCounter += 1;
+      if (this.imgLoadedCounter > this.cities.length - 1) {
+        this.prepareImage();
+        this.updateTime();
+      }
+    },
     pushInfo([key, value]) {
       if (key === 'city') {
         this.cities.push(value);
@@ -99,22 +120,28 @@ export default {
     updateTime() {
       this.location = this.nextLocation;
       this.name = this.nextName;
-      // this.zone = this.nextZone;
+      this.zone = this.nextZone;
       this.imgSrc = this.nextImgSrc;
+
+      this.mainImg = document.getElementById('mainImg');
+      if (this.mainImg.hasChildNodes()) {
+        this.mainImg.removeChild(this.mainImg.childNodes[0]);
+      }
+      if (this.imgSrc) {
+        this.mainImg.appendChild(this.imgSrc);
+      }
+
       this.year = this.nextYear;
       this.isActive = false;
-      // this.index += 1;
-      // if (this.index > this.cities.length) {
-      //   this.index = 0;
-      // }
     },
     prepareImage() {
       this.index = Math.floor(Math.random() * this.cities.length);
       this.nextLocation = this.locations[this.index];
       this.nextName = this.names[this.index];
       this.nextZone = this.zones[this.index];
-      this.zone = this.nextZone;
-      this.nextImgSrc = this.images[this.index];
+      this.nextImgSrc = this.loadedImages[this.index];
+      this.$log.debug('prepare', this.nextImgSrc);
+
       this.nextYear = Math.floor(Math.random() * 5) + 2012;
       this.isActive = true;
     },
