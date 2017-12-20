@@ -1,13 +1,15 @@
 <template>
   <div class="clockWrapper">
     <div class="clock">
-      <p class="time">{{ time }} </p>
+      <p class="time">{{ paddedHour }}{{ time }} </p>
       <p class="city">{{ day }}<br>{{ date }}</p>
     </div>
   </div>
 </template>
 
 <script>
+import { TimelineMax } from 'gsap';
+
 const week = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const month = ['January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December'];
@@ -17,12 +19,16 @@ export default {
   props: ['city', 'zone'],
   data() {
     return {
-      INTERVAL: 9, // seconds for emitting update
+      INTERVAL: 10, // seconds for emitting update
       mySeconds: 0,
       day: '',
+      hour: 0,
+      animatedHour: 0,
+      paddedHour: 0,
       time: '',
       date: '',
       timeID: '',
+      updating: false,
       msg: 'Welcome to Your Vue.js App',
     };
   },
@@ -42,14 +48,18 @@ export default {
       this.tzTime = this.getTimeZoneTime(this.zone);
       this.day = this.showDay(this.tzTime);
       this.date = this.showDate(this.tzTime);
+      this.hour = this.showHour(this.tzTime);
       this.time = this.showTime(this.tzTime);
     },
+    dateToHour(dt) {
+      return dt.getUTCHours();
+    },
     dateToTimeString(dt) {
-      const hh = `${this.zeroPadding(dt.getUTCHours(), 2)}`;
+      // const hh = `${this.zeroPadding(dt.getUTCHours(), 2)}`;
       const mm = `${this.zeroPadding(dt.getUTCMinutes(), 2)}`;
       const ss = `${this.zeroPadding(dt.getUTCSeconds(), 2)}`;
       this.mySeconds = dt.getUTCSeconds();
-      return `${hh}:${mm}:${ss}`;
+      return `:${mm}:${ss}`;
     },
     dateToDayString(dt) {
       const ww = `${week[dt.getUTCDay()]}`;
@@ -75,21 +85,39 @@ export default {
       const dateString = this.dateToDateString(tzTime);
       return dateString;
     },
+    showHour(tzTime) {
+      const hour = this.dateToHour(tzTime);
+      return hour;
+    },
     showTime(tzTime) {
       const timeString = this.dateToTimeString(tzTime);
       return timeString;
     },
     send(value) {
-      if (value % 10 === (this.INTERVAL - 1)) {
+      if (value % this.INTERVAL === (this.INTERVAL - 2)) {
         this.$emit('updatePre');
       }
-      if (value % 10 === this.INTERVAL) {
+      if (value % this.INTERVAL === this.INTERVAL - 1) {
+        this.updating = true;
         this.$emit('update');
       }
     },
   },
   watch: {
     mySeconds: 'send',
+    hour(newValue) {
+      const tl = new TimelineMax();
+      tl.to(this, 0.5, {
+        animatedHour: newValue,
+        // ease: Expo.easeInOut,
+        delay: 0,
+      });
+      tl.restart();
+    },
+    animatedHour(value) {
+      const newValue = Math.ceil(value);
+      this.paddedHour = this.zeroPadding(newValue, 2);
+    },
   },
 };
 </script>

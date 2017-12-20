@@ -100,7 +100,7 @@ export default {
       this.imgSrc = this.nextImgSrc;
 
       this.currentImg = this.images[this.index];
-      this.$log.debug('updateTime', this.currentImg);
+      // this.$log.debug('updateTime', this.currentImg);
 
       this.year = this.nextYear;
       this.isActive = false;
