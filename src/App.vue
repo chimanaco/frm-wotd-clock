@@ -98,7 +98,6 @@ export default {
       this.name = this.nextName;
       this.zone = this.nextZone;
       this.currentImg = this.images[this.index];
-      // this.$log.debug('updateTime', this.currentImg);
 
       this.year = this.nextYear;
       this.isActive = false;
