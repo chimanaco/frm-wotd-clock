@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <div id="transitionBox" v-bind:class="{ active: isActive }"></div>
-    <div id="mainImg"></div>
+    <img :src="currentImg">
     <div class="text">
       <WashroomTitle v-bind:title="name"></WashroomTitle>
       <WashroomTitle v-bind:title="location"></WashroomTitle>
@@ -31,27 +31,24 @@ export default {
   },
   data() {
     return {
+      currentImg: null,
       map: 'http://www.chimana.co/json/map.json',
       json: null,
-      imgSrc: null,
       location: null,
-      name: null,
-      zone: 0,
-      index: 0,
-      year: 2016,
       nextLocation: null,
+      name: null,
       nextName: null,
+      zone: 0,
       nextZone: null,
-      nextImgSrc: null,
+      index: 0,
+      year: 2016, //  TODO: Removed when it's Ready
       cities: [],
       countries: [],
       locations: [],
       names: [],
       zones: [],
       images: [],
-      loadedImages: [],
       isActive: false,
-      imgLoadedCounter: 0,
     };
   },
   created() {
@@ -69,36 +66,15 @@ export default {
       let j;
       for (j = 0; j < this.cities.length; j += 1) {
         this.locations[j] = `${this.cities[j]}, ${this.countries[j]}`;
-        const zone = Math.floor(Math.random() * 20) + -10;
+        const zone = Math.floor(Math.random() * 20) + -10; //  TODO: Removed when it's Ready
         this.zones.push(zone);
-
-        // load iamge from Tumblr
-        this.loadImage(j);
       }
+      // init
+      this.prepareImage();
+      this.updateTime();
     });
   },
   methods: {
-    loadImage(index) {
-      // correct way:
-      const image = new Image();
-      const count = index;
-      image.onload = () => {
-        this.loadedImages[count] = image;
-        // this.$log.debug('test', count, image);
-        this.loadCompleted();
-      };
-      // handle failure
-      image.onerror = () => {
-      };
-      image.src = this.images[index];
-    },
-    loadCompleted() {
-      this.imgLoadedCounter += 1;
-      if (this.imgLoadedCounter > this.cities.length - 1) {
-        this.prepareImage();
-        this.updateTime();
-      }
-    },
     pushInfo([key, value]) {
       if (key === 'city') {
         this.cities.push(value);
@@ -123,13 +99,8 @@ export default {
       this.zone = this.nextZone;
       this.imgSrc = this.nextImgSrc;
 
-      this.mainImg = document.getElementById('mainImg');
-      if (this.mainImg.hasChildNodes()) {
-        this.mainImg.removeChild(this.mainImg.childNodes[0]);
-      }
-      if (this.imgSrc) {
-        this.mainImg.appendChild(this.imgSrc);
-      }
+      this.currentImg = this.images[this.index];
+      this.$log.debug('updateTime', this.currentImg);
 
       this.year = this.nextYear;
       this.isActive = false;
@@ -139,10 +110,8 @@ export default {
       this.nextLocation = this.locations[this.index];
       this.nextName = this.names[this.index];
       this.nextZone = this.zones[this.index];
-      this.nextImgSrc = this.loadedImages[this.index];
-      this.$log.debug('prepare', this.nextImgSrc);
 
-      this.nextYear = Math.floor(Math.random() * 5) + 2012;
+      this.nextYear = Math.floor(Math.random() * 5) + 2012; //  TODO: Removed when it's Ready
       this.isActive = true;
     },
   },
