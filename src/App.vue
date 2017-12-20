@@ -97,8 +97,6 @@ export default {
       this.location = this.nextLocation;
       this.name = this.nextName;
       this.zone = this.nextZone;
-      this.imgSrc = this.nextImgSrc;
-
       this.currentImg = this.images[this.index];
       // this.$log.debug('updateTime', this.currentImg);
 

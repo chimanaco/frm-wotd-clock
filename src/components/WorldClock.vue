@@ -112,8 +112,6 @@ export default {
       }
     },
     shuffleDescription(day, date) {
-      this.$log.debug('shuffleDescription', this.preDay, day);
-
       if (this.preDay !== day) {
         // shuffle to a new string specified by the `text` option
         this.descriptionDay.shuffle({ text: day, time: 10 });
