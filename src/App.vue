@@ -69,7 +69,7 @@ export default {
       let j;
       for (j = 0; j < this.cities.length; j += 1) {
         this.locations[j] = `${this.cities[j]}, ${this.countries[j]}`;
-        const zone = Math.floor(Math.random() * 20) + -10; //  TODO: Removed when it's Ready
+        const zone = Math.floor(Math.random() * -80) + -10; //  TODO: Removed when it's Ready
         this.zones.push(zone);
       }
       // init
