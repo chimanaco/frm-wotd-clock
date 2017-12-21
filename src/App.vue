@@ -136,7 +136,7 @@ body {
   width: 100%;
   height: 100%;
   background: #000;
-  font-family: Helvetica, Arial, Meiryo, sans-serif;
+  font-family: Arial, Meiryo, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: #FFF;

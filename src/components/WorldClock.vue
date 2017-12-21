@@ -164,7 +164,9 @@ export default {
 
 p.time {
   margin-right: 20px;
-  font-size: 150px;
+  width: 600px;
+  font-size: 148px;
+  text-align: right;
 }
 
 p.date {
