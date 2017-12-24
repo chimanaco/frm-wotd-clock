@@ -144,7 +144,8 @@ body {
 
 #app {
   position: relative;
-  width: 100%;
+  margin: 0 auto;
+  width: 1080px;
   text-align: center;
 }
 
