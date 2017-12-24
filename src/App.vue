@@ -1,7 +1,8 @@
 <template>
   <div id="app">
     <div id="transitionBox" v-bind:class="{ active: isActive }"></div>
-    <img :src="currentImg">
+    <img id="img1" :src="img1" v-bind:class="{ active: showImg1 }">
+    <img id="img2" :src="img2" v-bind:class="{ active: !showImg1 }">
     <div class="text">
       <WashroomTitle v-bind:title="name"></WashroomTitle>
       <WashroomTitle v-bind:title="location"></WashroomTitle>
@@ -31,7 +32,8 @@ export default {
   },
   data() {
     return {
-      currentImg: null,
+      img1: null,
+      img2: null,
       map: 'http://www.chimana.co/json/map.json',
       json: null,
       location: null,
@@ -49,6 +51,7 @@ export default {
       zones: [],
       images: [],
       isActive: false,
+      showImg1: true,
     };
   },
   created() {
@@ -66,7 +69,7 @@ export default {
       let j;
       for (j = 0; j < this.cities.length; j += 1) {
         this.locations[j] = `${this.cities[j]}, ${this.countries[j]}`;
-        const zone = Math.floor(Math.random() * 20) + -10; //  TODO: Removed when it's Ready
+        const zone = Math.floor(Math.random() * -80) + -10; //  TODO: Removed when it's Ready
         this.zones.push(zone);
       }
       // init
@@ -97,8 +100,8 @@ export default {
       this.location = this.nextLocation;
       this.name = this.nextName;
       this.zone = this.nextZone;
-      this.currentImg = this.images[this.index];
-      // this.$log.debug('updateTime', this.currentImg);
+
+      this.showImg1 = !this.showImg1;
 
       this.year = this.nextYear;
       this.isActive = false;
@@ -109,6 +112,12 @@ export default {
       this.nextName = this.names[this.index];
       this.nextZone = this.zones[this.index];
 
+      if (this.showImg1) {
+        this.img2 = this.images[this.index];
+      } else {
+        this.img1 = this.images[this.index];
+      }
+
       this.nextYear = Math.floor(Math.random() * 5) + 2012; //  TODO: Removed when it's Ready
       this.isActive = true;
     },
@@ -116,14 +125,18 @@ export default {
 };
 </script>
 
-<style>
+<style lang="scss">
+
+$deviceHeight: 1920px;
+$tweenSpeed: 0.75s;
+
 body {
   margin: 0;
   padding: 0;
   width: 100%;
   height: 100%;
   background: #000;
-  font-family: Helvetica, Arial, Meiryo, sans-serif;
+  font-family: Arial, Meiryo, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: #FFF;
@@ -135,15 +148,18 @@ body {
   text-align: center;
 }
 
-img {
-  height: 1080px;
-  width: 1080px;
-}
-
-#img2 {
+#img1, #img2 {
   position: absolute;
   top: 0;
-  left: 540px;
+  left: 0;
+  height: 1080px;
+  width: 1080px;
+
+  display: none;
+
+  &.active {
+    display: block;
+  }
 }
 
 p {
@@ -154,7 +170,7 @@ p {
 
 div.text {
   height: 500px;
-  padding-top: 40px;
+  padding-top: 1120px;
 }
 
 #footer {
@@ -164,13 +180,13 @@ div.text {
   width: 100%;
   height: 100px;
   text-align: center;
-}
 
-#footer p {
-  width: 1020px;
-  margin: 0 auto;
-  font-size: 80px;
-  font-weight: bold;
+  p {
+    width: 1020px;
+    margin: 0 auto;
+    font-size: 80px;
+    font-weight: bold;
+  }
 }
 
 div#transitionBox {
@@ -179,26 +195,22 @@ div#transitionBox {
   width: 100%;
   height: 0px;
   background: #000;
-  animation: fadeOut 0.75s;
-  //opacity: 0;
+  animation: fadeOut $tweenSpeed;
 }
 
 div#transitionBox.active {
-  height: 1920px;
-  animation: mymove 0.75s;
-  //opacity: 1;
+  height: $deviceHeight;
+  animation: mymove $tweenSpeed;
 }
 
 @keyframes fadeOut {
-  //from { opacity: 1.0;}
-  //to { opacity: 0;}
-  from { height: 1920px;}
+  from { height: $deviceHeight;}
   to { height: 0px;}
 }
 
 @keyframes mymove {
   from { height: 0px;}
-  to { height: 1920px;}
+  to { height: $deviceHeight;}
 }
 
 
