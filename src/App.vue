@@ -113,7 +113,9 @@ export default {
       this.location = this.nextLocation;
       this.name = this.nextName;
       this.zone = this.nextZone;
-
+      if (isNaN(this.zone)) {
+        this.zone = 0;
+      }
       this.showImg1 = !this.showImg1;
 
       this.year = this.nextYear;
@@ -142,11 +144,11 @@ export default {
       $.getJSON(url, (json) => {
         const diff = json.rawOffset / 3600;
         vm.zones[index] = diff;
+        vm.zoneLoaded += 1;
         vm.checkIfZoneComplete();
       });
     },
     checkIfZoneComplete() {
-      this.zoneLoaded += 1;
       if (this.zoneLoaded >= this.cities.length - 1) {
         // init
         this.prepareImage();
