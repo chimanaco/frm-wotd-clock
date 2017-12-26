@@ -5,8 +5,8 @@
     <img id="img2" :src="img2" v-bind:class="{ active: !showImg1 }">
     <div class="text">
       <WashroomTitle v-bind:title="name"></WashroomTitle>
-      <WashroomTitle v-bind:title="location"></WashroomTitle>
       <WashroomTitle v-bind:title="year"></WashroomTitle>
+      <WashroomTitle v-bind:title="location"></WashroomTitle>
     </div>
     <WorldClock v-bind:city="location" v-bind:zone="zone" @update="updateTime" @updatePre="prepareImage"></WorldClock>
     <div id="footer">
@@ -41,17 +41,20 @@ export default {
       name: null,
       nextName: null,
       zone: 0,
-      nextZone: null,
+      nextZone: 0,
       index: 0,
       year: 2016, //  TODO: Removed when it's Ready
       cities: [],
       countries: [],
       locations: [],
+      latitude: [],
+      longitude: [],
       names: [],
       zones: [],
       images: [],
       isActive: false,
       showImg1: true,
+      zoneLoaded: 0,
     };
   },
   created() {
@@ -69,12 +72,8 @@ export default {
       let j;
       for (j = 0; j < this.cities.length; j += 1) {
         this.locations[j] = `${this.cities[j]}, ${this.countries[j]}`;
-        const zone = Math.floor(Math.random() * -80) + -10; //  TODO: Removed when it's Ready
-        this.zones.push(zone);
+        this.getTimeZone(j);
       }
-      // init
-      this.prepareImage();
-      this.updateTime();
     });
   },
   methods: {
@@ -84,6 +83,20 @@ export default {
       }
       if (key === 'country') {
         this.countries.push(value);
+      }
+      if (key === 'latitude') {
+        if (value === '') {
+          this.latitude.push('0');
+        } else {
+          this.latitude.push(value);
+        }
+      }
+      if (key === 'longitude') {
+        if (value === '') {
+          this.longitude.push('0');
+        } else {
+          this.longitude.push(value);
+        }
       }
       if (key === 'name') {
         if (value === '') {
@@ -120,6 +133,25 @@ export default {
 
       this.nextYear = Math.floor(Math.random() * 5) + 2012; //  TODO: Removed when it's Ready
       this.isActive = true;
+    },
+    getTimeZone(index) {
+      const vm = this;
+      const lat = this.latitude[index];
+      const lon = this.longitude[index];
+      const url = `https://maps.googleapis.com/maps/api/timezone/json?location=${lat},${lon}&timestamp=1331161200&sensor=false`;
+      $.getJSON(url, (json) => {
+        const diff = json.rawOffset / 3600;
+        vm.zones[index] = diff;
+        vm.checkIfZoneComplete();
+      });
+    },
+    checkIfZoneComplete() {
+      this.zoneLoaded += 1;
+      if (this.zoneLoaded >= this.cities.length - 1) {
+        // init
+        this.prepareImage();
+        this.updateTime();
+      }
     },
   },
 };
