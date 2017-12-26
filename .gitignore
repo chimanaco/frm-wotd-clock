@@ -17,3 +17,6 @@ selenium-debug.log
 *.sln
 
 /src/assets/*.jpg
+
+# sftp credential
+credential.json
