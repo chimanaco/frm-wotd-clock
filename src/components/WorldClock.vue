@@ -146,16 +146,17 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
 .clockWrapper {
-  position: absolute;
+  position: fixed;
+  left: 0;
+  bottom: 0;
   z-index: 20;
   width: 100%;
-  height: 180px;
-  //background: blue;
+  height: 15.7407407%;  /* 170/1080 */
 }
 
 .clock {
   margin: 0 auto;
-  width: 1020px;
+  width: 94.4444444%; /* 1020/1080 */
   text-align: left;
 }
 
@@ -166,14 +167,14 @@ export default {
 }
 
 p.time {
-  margin-right: 20px;
-  width: 600px;
-  font-size: 148px;
+  margin-right: 4.62962963%; /* 50/1080 */
+  width: 55.5555556%; /* 600/1080 */
+  font-size: 13.7037037vw; /* 148/1080 */
   text-align: right;
 }
 
 p.date {
-  font-size: 58px;
+  font-size: 5.37037037vw; /* 58/1080 */
 }
 
 </style>

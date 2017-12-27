@@ -17,13 +17,12 @@ export default {
 }
 
 h1 {
-  //background: blue;
-  width: 1020px;
+  width: 94.4444444%; /* 1020/1080 */
+  padding: 0 0 1.85185185%; /* 20/1080 */
   margin: 0 auto;
-  padding: 0 0 20px;
   line-height: 1;
-  font-size: 80px;
   text-align: left;
+  font-size: 7.40740741vw;  /* 80/1080 */
 }
 
 </style>

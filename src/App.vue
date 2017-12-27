@@ -6,11 +6,10 @@
       <!--Zone: {{zone}}<br>-->
     <!--</div>-->
     <div id="transitionBox" v-bind:class="{ active: isActive }"></div>
-    <img id="img1" :src="img1" v-bind:class="{ active: showImg1 }">
-    <img id="img2" :src="img2" v-bind:class="{ active: !showImg1 }">
+    <img id="img1" :src="img1" v-bind:height="imgHeight" v-bind:class="{ active: showImg1 }">
+    <img id="img2" :src="img2" v-bind:height="imgHeight" v-bind:class="{ active: !showImg1 }">
     <div class="text">
       <WashroomTitle v-bind:title="name"></WashroomTitle>
-      <WashroomTitle v-bind:title="year"></WashroomTitle>
       <WashroomTitle v-bind:title="location"></WashroomTitle>
     </div>
     <WorldClock v-bind:city="location" v-bind:zone="zone" @update="updateTime" @updatePre="prepareImage" @transition="transition"></WorldClock>
@@ -26,7 +25,6 @@ import credential from '../credential.json';
 import WorldClock from './components/WorldClock';
 import WashroomImage from './components/WashroomImage';
 import WashroomTitle from './components/WashroomTitle';
-import WashroomDescription from './components/WashroomDescription';
 
 export default {
   name: 'app',
@@ -34,7 +32,6 @@ export default {
     WorldClock,
     WashroomImage,
     WashroomTitle,
-    WashroomDescription,
   },
   data() {
     return {
@@ -43,6 +40,7 @@ export default {
       timestampResponse: 0,
       img1: null,
       img2: null,
+      imgHeight: 0,
       map: 'http://www.chimana.co/json/locations.json',
       json: null,
       location: null,
@@ -71,6 +69,7 @@ export default {
     };
   },
   created() {
+    this.getImageHeight();
     const vm = this;
     axios.get(this.map)
       .then((response) => {
@@ -92,6 +91,9 @@ export default {
       });
   },
   methods: {
+    getImageHeight() {
+      this.imgHeight = window.innerWidth;
+    },
     pushInfo([key, value]) {
       if (key === 'city') {
         this.cities.push(value);
@@ -135,15 +137,13 @@ export default {
       this.isActive = true;
     },
     updateTime() {
-      this.location = this.nextLocation;
+      this.location = `${this.nextLocation}, ${this.nextYear}`;
       this.name = this.nextName;
       this.zone = this.nextZone;
       if (isNaN(this.zone)) {
         this.zone = 0;
       }
       this.showImg1 = !this.showImg1;
-
-      this.year = this.nextYear;
       this.isActive = false;
     },
     prepareImage() {
@@ -204,8 +204,21 @@ export default {
 
 <style lang="scss">
 
-$deviceHeight: 1920px;
+$deviceHeight: 150%;
 $tweenSpeed: 0.75s;
+
+@mixin percent($pxval: 16) {
+  width: ($pxval / 1080) * 1%;
+}
+
+@mixin vw($pxval: 16) {
+  font-size: ($pxval / 1080) * 100vw;
+}
+
+html {
+  font-size: 16px;
+  overflow-x: hidden;
+}
 
 body {
   margin: 0;
@@ -232,7 +245,8 @@ body {
 #app {
   position: relative;
   margin: 0 auto;
-  width: 1080px;
+  width: 100%;
+  height: auto;
   text-align: center;
 }
 
@@ -240,8 +254,7 @@ body {
   position: absolute;
   top: 0;
   left: 0;
-  height: 1080px;
-  width: 1080px;
+  width: 100%;
 
   display: none;
 
@@ -257,23 +270,27 @@ p {
 }
 
 div.text {
-  height: 500px;
-  padding-top: 1120px;
+  height: 46.2962963%; /* 500/1080 */
+  padding-top: 103.703704%; /* 1120/1080 */
 }
 
 #footer {
-  position: absolute;
+  position:fixed;
   z-index: 20;
-  top: 1790px;
+  left: 0;
+  bottom: 0;
   width: 100%;
-  height: 100px;
+  height: 9.25925926%; /* 100/1080 */
   text-align: center;
+  vertical-align: middle;
 
   p {
-    width: 1020px;
-    margin: 0 auto;
-    font-size: 80px;
+    width: 94.4444444%; /* 1020/1080 */
+    margin: 5% auto 0;
+    line-height: 1;
+    font-size: 7.40740741vw;  /* 80/1080 */
     font-weight: bold;
+    text-justify: inter-character;
   }
 }
 
