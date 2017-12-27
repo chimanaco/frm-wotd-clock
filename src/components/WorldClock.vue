@@ -101,8 +101,11 @@ export default {
       return timeString;
     },
     send(value) {
-      if (value % this.INTERVAL === (this.INTERVAL - 2)) {
+      if (value % this.INTERVAL === (this.INTERVAL - 8)) {
         this.$emit('updatePre');
+      }
+      if (value % this.INTERVAL === (this.INTERVAL - 2)) {
+        this.$emit('transition');
       }
       if (value % this.INTERVAL === this.INTERVAL - 1) {
         this.$emit('update');

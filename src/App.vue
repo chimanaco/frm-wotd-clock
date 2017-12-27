@@ -1,5 +1,10 @@
 <template>
   <div id="app">
+    <!--<div id="debugLog">-->
+      <!--Total: {{totalNumber}}<br>-->
+      <!--NextZone: {{nextZone}}<br>-->
+      <!--Zone: {{zone}}<br>-->
+    <!--</div>-->
     <div id="transitionBox" v-bind:class="{ active: isActive }"></div>
     <img id="img1" :src="img1" v-bind:class="{ active: showImg1 }">
     <img id="img2" :src="img2" v-bind:class="{ active: !showImg1 }">
@@ -8,7 +13,7 @@
       <WashroomTitle v-bind:title="year"></WashroomTitle>
       <WashroomTitle v-bind:title="location"></WashroomTitle>
     </div>
-    <WorldClock v-bind:city="location" v-bind:zone="zone" @update="updateTime" @updatePre="prepareImage"></WorldClock>
+    <WorldClock v-bind:city="location" v-bind:zone="zone" @update="updateTime" @updatePre="prepareImage" @transition="transition"></WorldClock>
     <div id="footer">
       <p>WASHROOM OF THE DAY</p>
     </div>
@@ -16,7 +21,8 @@
 </template>
 
 <script>
-import $ from 'jquery';
+import axios from 'axios';
+import credential from '../credential.json';
 import WorldClock from './components/WorldClock';
 import WashroomImage from './components/WashroomImage';
 import WashroomTitle from './components/WashroomTitle';
@@ -32,9 +38,12 @@ export default {
   },
   data() {
     return {
+      timestamp: 0,
+      timestamp2: 0,
+      timestampResponse: 0,
       img1: null,
       img2: null,
-      map: 'http://www.chimana.co/json/map.json',
+      map: 'http://www.chimana.co/json/locations.json',
       json: null,
       location: null,
       nextLocation: null,
@@ -43,7 +52,7 @@ export default {
       zone: 0,
       nextZone: 0,
       index: 0,
-      year: 2016, //  TODO: Removed when it's Ready
+      year: 0,
       cities: [],
       countries: [],
       locations: [],
@@ -52,29 +61,35 @@ export default {
       names: [],
       zones: [],
       images: [],
+      years: [],
       isActive: false,
       showImg1: true,
-      zoneLoaded: 0,
+      locationLoaded: 0,
+      isLocationLoaded: false,
+      totalNumber: 0,
+      error: 0,
     };
   },
   created() {
     const vm = this;
-    $.getJSON(this.map, (json) => {
-      vm.json = json.data.length;
-      let i;
-      for (i = 0; i < json.data.length; i += 1) {
-        const obj = json.data[i];
-        // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/entries
-        // using array extras
-        Object.entries(obj).forEach(this.pushInfo);
-      }
+    axios.get(this.map)
+      .then((response) => {
+        const responseData = response.data.data;
+        vm.error = responseData.length;
+        vm.totalNumber = responseData.length;
 
-      let j;
-      for (j = 0; j < this.cities.length; j += 1) {
-        this.locations[j] = `${this.cities[j]}, ${this.countries[j]}`;
-        this.getTimeZone(j);
-      }
-    });
+        let i;
+        for (i = 0; i < responseData.length; i += 1) {
+          const obj = responseData[i];
+          // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/entries
+          // using array extras
+          Object.entries(obj).forEach(this.pushInfo);
+          this.checkIfLocationComplete();
+        }
+      })
+      .catch((error) => {
+        vm.error = error;
+      });
   },
   methods: {
     pushInfo([key, value]) {
@@ -86,18 +101,19 @@ export default {
       }
       if (key === 'latitude') {
         if (value === '') {
-          this.latitude.push('0');
+          this.latitude.push('35.6895');
         } else {
           this.latitude.push(value);
         }
       }
       if (key === 'longitude') {
         if (value === '') {
-          this.longitude.push('0');
+          this.longitude.push('139.6917');
         } else {
           this.longitude.push(value);
         }
       }
+
       if (key === 'name') {
         if (value === '') {
           this.names.push('Unknown');
@@ -105,15 +121,26 @@ export default {
           this.names.push(value);
         }
       }
+
+      if (key === 'date') {
+        const year = value.split('/')[2];
+        this.years.push(year);
+      }
+
       if (key === 'img') {
         this.images.push(value);
       }
+    },
+    transition() {
+      this.isActive = true;
     },
     updateTime() {
       this.location = this.nextLocation;
       this.name = this.nextName;
       this.zone = this.nextZone;
-
+      if (isNaN(this.zone)) {
+        this.zone = 0;
+      }
       this.showImg1 = !this.showImg1;
 
       this.year = this.nextYear;
@@ -123,7 +150,25 @@ export default {
       this.index = Math.floor(Math.random() * this.cities.length);
       this.nextLocation = this.locations[this.index];
       this.nextName = this.names[this.index];
-      this.nextZone = this.zones[this.index];
+
+      const vm = this;
+      const lat = this.latitude[this.index];
+      const lon = this.longitude[this.index];
+      const url = `https://maps.googleapis.com/maps/api/timezone/json?location=${lat},${lon}&timestamp=${this.timestamp}&sensor=false&key=${credential.gmapApiKey}`;
+      let diff;
+      axios.get(url)
+        .then((response) => {
+          vm.timestampResponse = response;
+          if (response.data.rawOffset == null) {
+            this.getTimeZone(this.index);
+          } else {
+            diff = (response.data.dstOffset + response.data.rawOffset) / 3600;
+          }
+          this.nextZone = diff;
+        })
+        .catch((error) => {
+          vm.error = error;
+        });
 
       if (this.showImg1) {
         this.img2 = this.images[this.index];
@@ -131,26 +176,26 @@ export default {
         this.img1 = this.images[this.index];
       }
 
-      this.nextYear = Math.floor(Math.random() * 5) + 2012; //  TODO: Removed when it's Ready
-      this.isActive = true;
+      this.nextYear = this.years[this.index];
     },
-    getTimeZone(index) {
-      const vm = this;
-      const lat = this.latitude[index];
-      const lon = this.longitude[index];
-      const url = `https://maps.googleapis.com/maps/api/timezone/json?location=${lat},${lon}&timestamp=1331161200&sensor=false`;
-      $.getJSON(url, (json) => {
-        const diff = json.rawOffset / 3600;
-        vm.zones[index] = diff;
-        vm.checkIfZoneComplete();
-      });
+    startLoadZone() {
+      this.timestamp = Math.round(new Date().getTime() / 1000);
+      let j;
+      for (j = 0; j < this.cities.length; j += 1) {
+        this.locations[j] = `${this.cities[j]}, ${this.countries[j]}`;
+      }
+
+      this.prepareImage();
+      this.updateTime();
     },
-    checkIfZoneComplete() {
-      this.zoneLoaded += 1;
-      if (this.zoneLoaded >= this.cities.length - 1) {
-        // init
-        this.prepareImage();
-        this.updateTime();
+    checkIfLocationComplete() {
+      this.locationLoaded += 1;
+      if (this.locationLoaded > this.totalNumber - 1) {
+        if (!this.isLocationLoaded) {
+          // init
+          this.startLoadZone();
+          this.isLocationLoaded = true;
+        }
       }
     },
   },
@@ -168,10 +213,20 @@ body {
   width: 100%;
   height: 100%;
   background: #000;
-  font-family: Arial, Meiryo, sans-serif;
+  font-family: Arial, Meiryo, sans-serif, monospace;  /* Nice to be monospace for clock */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: #FFF;
+}
+
+#debugLog {
+  position: absolute;
+  z-index: 200;
+  width: 100%;
+  height: 300px;
+  background: rgba(0, 0, 0, 0.4);
+  text-align: left;
+  font-size: 40px;
 }
 
 #app {
