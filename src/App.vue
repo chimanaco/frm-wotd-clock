@@ -1,6 +1,8 @@
 <template>
   <div id="app">
     <div id="debugLog">
+      Zones: {{zones}}<br>
+      Total: {{totalNumber}}<br>
       NextZone: {{nextZone}}<br>
       Zone: {{zone}}<br>
       ZoneLoaded: {{zoneLoaded}}<br>
@@ -21,7 +23,6 @@
 </template>
 
 <script>
-import $ from 'jquery';
 import axios from 'axios';
 import WorldClock from './components/WorldClock';
 import WashroomImage from './components/WashroomImage';
@@ -60,27 +61,33 @@ export default {
       images: [],
       isActive: false,
       showImg1: true,
+      locationLoaded: 0,
+      isLocationLoaded: false,
       zoneLoaded: 0,
+      totalNumber: 0,
+      error: 0,
     };
   },
   created() {
     const vm = this;
-    $.getJSON(this.map, (json) => {
-      vm.json = json.data.length;
-      let i;
-      for (i = 0; i < json.data.length; i += 1) {
-        const obj = json.data[i];
-        // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/entries
-        // using array extras
-        Object.entries(obj).forEach(this.pushInfo);
-      }
+    axios.get(this.map)
+      .then((response) => {
+        const responseData = response.data.data;
+        vm.error = responseData.length;
+        vm.totalNumber = responseData.length;
 
-      let j;
-      for (j = 0; j < this.cities.length; j += 1) {
-        this.locations[j] = `${this.cities[j]}, ${this.countries[j]}`;
-        this.getTimeZone(j);
-      }
-    });
+        let i;
+        for (i = 0; i < responseData.length; i += 1) {
+          const obj = responseData[i];
+          // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/entries
+          // using array extras
+          Object.entries(obj).forEach(this.pushInfo);
+          this.checkIfLocationComplete();
+        }
+      })
+      .catch((error) => {
+        vm.error = error;
+      });
   },
   methods: {
     pushInfo([key, value]) {
@@ -151,15 +158,32 @@ export default {
       .then((response) => {
         const diff = response.data.rawOffset / 3600;
         vm.zones[index] = diff;
-        vm.zoneLoaded += 1;
         vm.checkIfZoneComplete();
       })
       .catch((error) => {
         vm.error = error;
       });
     },
+    startLoadZone() {
+      let j;
+      for (j = 0; j < this.cities.length; j += 1) {
+        this.locations[j] = `${this.cities[j]}, ${this.countries[j]}`;
+        this.getTimeZone(j);
+      }
+    },
+    checkIfLocationComplete() {
+      this.locationLoaded += 1;
+      if (this.locationLoaded > this.totalNumber - 1) {
+        if (!this.isLocationLoaded) {
+          // init
+          this.startLoadZone();
+          this.isLocationLoaded = true;
+        }
+      }
+    },
     checkIfZoneComplete() {
-      if (this.zoneLoaded >= this.cities.length - 1) {
+      this.zoneLoaded += 1;
+      if (this.zoneLoaded > this.totalNumber - 1) {
         // init
         this.prepareImage();
         this.updateTime();
@@ -189,8 +213,8 @@ body {
 #debugLog {
   position: absolute;
   z-index: 200;
-  width: 400px;
-  height: 200px;
+  width: 100%;
+  height: 300px;
   background: rgba(0, 0, 0, 0.4);
   text-align: left;
   font-size: 40px;
