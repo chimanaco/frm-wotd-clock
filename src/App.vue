@@ -1,12 +1,9 @@
 <template>
   <div id="app">
     <!--<div id="debugLog">-->
-      <!--Zones: {{zones}}<br>-->
-      <!--Zones: {{timestamp2}}<br>-->
       <!--Total: {{totalNumber}}<br>-->
       <!--NextZone: {{nextZone}}<br>-->
       <!--Zone: {{zone}}<br>-->
-      <!--ZoneLoaded: {{zoneLoaded}}<br>-->
     <!--</div>-->
     <div id="transitionBox" v-bind:class="{ active: isActive }"></div>
     <img id="img1" :src="img1" v-bind:class="{ active: showImg1 }">
@@ -16,7 +13,7 @@
       <WashroomTitle v-bind:title="year"></WashroomTitle>
       <WashroomTitle v-bind:title="location"></WashroomTitle>
     </div>
-    <WorldClock v-bind:city="location" v-bind:zone="zone" @update="updateTime" @updatePre="prepareImage"></WorldClock>
+    <WorldClock v-bind:city="location" v-bind:zone="zone" @update="updateTime" @updatePre="prepareImage" @transition="transition"></WorldClock>
     <div id="footer">
       <p>WASHROOM OF THE DAY</p>
     </div>
@@ -25,6 +22,7 @@
 
 <script>
 import axios from 'axios';
+import credential from '../credential.json';
 import WorldClock from './components/WorldClock';
 import WashroomImage from './components/WashroomImage';
 import WashroomTitle from './components/WashroomTitle';
@@ -42,6 +40,7 @@ export default {
     return {
       timestamp: 0,
       timestamp2: 0,
+      timestampResponse: 0,
       img1: null,
       img2: null,
       map: 'http://www.chimana.co/json/locations.json',
@@ -53,7 +52,7 @@ export default {
       zone: 0,
       nextZone: 0,
       index: 0,
-      year: 2016, //  TODO: Removed when it's Ready
+      year: 0,
       cities: [],
       countries: [],
       locations: [],
@@ -62,11 +61,11 @@ export default {
       names: [],
       zones: [],
       images: [],
+      years: [],
       isActive: false,
       showImg1: true,
       locationLoaded: 0,
       isLocationLoaded: false,
-      zoneLoaded: 0,
       totalNumber: 0,
       error: 0,
     };
@@ -114,6 +113,7 @@ export default {
           this.longitude.push(value);
         }
       }
+
       if (key === 'name') {
         if (value === '') {
           this.names.push('Unknown');
@@ -121,9 +121,18 @@ export default {
           this.names.push(value);
         }
       }
+
+      if (key === 'date') {
+        const year = value.split('/')[2];
+        this.years.push(year);
+      }
+
       if (key === 'img') {
         this.images.push(value);
       }
+    },
+    transition() {
+      this.isActive = true;
     },
     updateTime() {
       this.location = this.nextLocation;
@@ -141,7 +150,25 @@ export default {
       this.index = Math.floor(Math.random() * this.cities.length);
       this.nextLocation = this.locations[this.index];
       this.nextName = this.names[this.index];
-      this.nextZone = this.zones[this.index];
+
+      const vm = this;
+      const lat = this.latitude[this.index];
+      const lon = this.longitude[this.index];
+      const url = `https://maps.googleapis.com/maps/api/timezone/json?location=${lat},${lon}&timestamp=${this.timestamp}&sensor=false&key=${credential.gmapApiKey}`;
+      let diff;
+      axios.get(url)
+        .then((response) => {
+          vm.timestampResponse = response;
+          if (response.data.rawOffset == null) {
+            this.getTimeZone(this.index);
+          } else {
+            diff = (response.data.dstOffset + response.data.rawOffset) / 3600;
+          }
+          this.nextZone = diff;
+        })
+        .catch((error) => {
+          vm.error = error;
+        });
 
       if (this.showImg1) {
         this.img2 = this.images[this.index];
@@ -149,37 +176,17 @@ export default {
         this.img1 = this.images[this.index];
       }
 
-      this.nextYear = Math.floor(Math.random() * 5) + 2012; //  TODO: Removed when it's Ready
-      this.isActive = true;
-    },
-    getTimeZone(index) {
-      const vm = this;
-      const lat = this.latitude[index];
-      const lon = this.longitude[index];
-      const url = `https://maps.googleapis.com/maps/api/timezone/json?location=${lat},${lon}&timestamp=${this.timestamp}&sensor=false`;
-//      this.timestamp2 = url;
-      axios.get(url)
-      .then((response) => {
-        if (response.data.rawOffset == null) {
-          vm.getTimeZone(index);
-        } else {
-          const diff = response.data.rawOffset / 3600;
-          vm.zones[index] = diff;
-          vm.checkIfZoneComplete();
-        }
-      })
-      .catch((error) => {
-        vm.error = error;
-      });
+      this.nextYear = this.years[this.index];
     },
     startLoadZone() {
       this.timestamp = Math.round(new Date().getTime() / 1000);
-      this.timestamp = 1331161200;
       let j;
       for (j = 0; j < this.cities.length; j += 1) {
         this.locations[j] = `${this.cities[j]}, ${this.countries[j]}`;
-        this.getTimeZone(j);
       }
+
+      this.prepareImage();
+      this.updateTime();
     },
     checkIfLocationComplete() {
       this.locationLoaded += 1;
@@ -189,14 +196,6 @@ export default {
           this.startLoadZone();
           this.isLocationLoaded = true;
         }
-      }
-    },
-    checkIfZoneComplete() {
-      this.zoneLoaded += 1;
-      if (this.zoneLoaded > this.totalNumber - 1) {
-        // init
-        this.prepareImage();
-        this.updateTime();
       }
     },
   },
