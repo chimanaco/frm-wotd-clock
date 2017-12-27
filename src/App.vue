@@ -1,12 +1,13 @@
 <template>
   <div id="app">
-    <div id="debugLog">
-      Zones: {{zones}}<br>
-      Total: {{totalNumber}}<br>
-      NextZone: {{nextZone}}<br>
-      Zone: {{zone}}<br>
-      ZoneLoaded: {{zoneLoaded}}<br>
-    </div>
+    <!--<div id="debugLog">-->
+      <!--Zones: {{zones}}<br>-->
+      <!--Zones: {{timestamp2}}<br>-->
+      <!--Total: {{totalNumber}}<br>-->
+      <!--NextZone: {{nextZone}}<br>-->
+      <!--Zone: {{zone}}<br>-->
+      <!--ZoneLoaded: {{zoneLoaded}}<br>-->
+    <!--</div>-->
     <div id="transitionBox" v-bind:class="{ active: isActive }"></div>
     <img id="img1" :src="img1" v-bind:class="{ active: showImg1 }">
     <img id="img2" :src="img2" v-bind:class="{ active: !showImg1 }">
@@ -39,6 +40,8 @@ export default {
   },
   data() {
     return {
+      timestamp: 0,
+      timestamp2: 0,
       img1: null,
       img2: null,
       map: 'http://www.chimana.co/json/locations.json',
@@ -99,14 +102,14 @@ export default {
       }
       if (key === 'latitude') {
         if (value === '') {
-          this.latitude.push('0');
+          this.latitude.push('35.6895');
         } else {
           this.latitude.push(value);
         }
       }
       if (key === 'longitude') {
         if (value === '') {
-          this.longitude.push('0');
+          this.longitude.push('139.6917');
         } else {
           this.longitude.push(value);
         }
@@ -153,18 +156,25 @@ export default {
       const vm = this;
       const lat = this.latitude[index];
       const lon = this.longitude[index];
-      const url = `https://maps.googleapis.com/maps/api/timezone/json?location=${lat},${lon}&timestamp=1331161200&sensor=false`;
+      const url = `https://maps.googleapis.com/maps/api/timezone/json?location=${lat},${lon}&timestamp=${this.timestamp}&sensor=false`;
+//      this.timestamp2 = url;
       axios.get(url)
       .then((response) => {
-        const diff = response.data.rawOffset / 3600;
-        vm.zones[index] = diff;
-        vm.checkIfZoneComplete();
+        if (response.data.rawOffset == null) {
+          vm.getTimeZone(index);
+        } else {
+          const diff = response.data.rawOffset / 3600;
+          vm.zones[index] = diff;
+          vm.checkIfZoneComplete();
+        }
       })
       .catch((error) => {
         vm.error = error;
       });
     },
     startLoadZone() {
+      this.timestamp = Math.round(new Date().getTime() / 1000);
+      this.timestamp = 1331161200;
       let j;
       for (j = 0; j < this.cities.length; j += 1) {
         this.locations[j] = `${this.cities[j]}, ${this.countries[j]}`;
@@ -204,7 +214,7 @@ body {
   width: 100%;
   height: 100%;
   background: #000;
-  font-family: Arial, Meiryo, sans-serif;
+  font-family: Arial, Meiryo, sans-serif, monospace;  /* Nice to be monospace for clock */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: #FFF;
