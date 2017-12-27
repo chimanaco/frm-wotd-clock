@@ -1,5 +1,10 @@
 <template>
   <div id="app">
+    <div id="debugLog">
+      NextZone: {{nextZone}}<br>
+      Zone: {{zone}}<br>
+      ZoneLoaded: {{zoneLoaded}}<br>
+    </div>
     <div id="transitionBox" v-bind:class="{ active: isActive }"></div>
     <img id="img1" :src="img1" v-bind:class="{ active: showImg1 }">
     <img id="img2" :src="img2" v-bind:class="{ active: !showImg1 }">
@@ -17,6 +22,7 @@
 
 <script>
 import $ from 'jquery';
+import axios from 'axios';
 import WorldClock from './components/WorldClock';
 import WashroomImage from './components/WashroomImage';
 import WashroomTitle from './components/WashroomTitle';
@@ -34,7 +40,7 @@ export default {
     return {
       img1: null,
       img2: null,
-      map: 'http://www.chimana.co/json/map.json',
+      map: 'http://www.chimana.co/json/locations.json',
       json: null,
       location: null,
       nextLocation: null,
@@ -141,11 +147,15 @@ export default {
       const lat = this.latitude[index];
       const lon = this.longitude[index];
       const url = `https://maps.googleapis.com/maps/api/timezone/json?location=${lat},${lon}&timestamp=1331161200&sensor=false`;
-      $.getJSON(url, (json) => {
-        const diff = json.rawOffset / 3600;
+      axios.get(url)
+      .then((response) => {
+        const diff = response.data.rawOffset / 3600;
         vm.zones[index] = diff;
         vm.zoneLoaded += 1;
         vm.checkIfZoneComplete();
+      })
+      .catch((error) => {
+        vm.error = error;
       });
     },
     checkIfZoneComplete() {
@@ -174,6 +184,16 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: #FFF;
+}
+
+#debugLog {
+  position: absolute;
+  z-index: 200;
+  width: 400px;
+  height: 200px;
+  background: rgba(0, 0, 0, 0.4);
+  text-align: left;
+  font-size: 40px;
 }
 
 #app {
